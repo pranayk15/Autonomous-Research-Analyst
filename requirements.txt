@@ -1,0 +1,17 @@
+streamlit
+sentence-transformers
+chromadb
+google-generativeai
+pandas
+numpy
+PyPDF2
+python-docx
+beautifulsoup4
+reportlab
+markdown2
+python-dotenv
+python-pptx
+pinecone-client
+requests
+langchain
+langchain-community
