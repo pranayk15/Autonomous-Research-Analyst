@@ -73,10 +73,8 @@ class ResearchEngine:
         # Load embedding model (cached)
         self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         
-        # Initialize Vector Store
-        os.makedirs(persist_directory, exist_ok=True)
+        # Initialize Vector Store (Using In-Memory mode for stability in deployment)
         self.vector_db = Chroma(
-            persist_directory=persist_directory,
             embedding_function=self.embeddings,
             collection_name="research_docs"
         )
@@ -103,7 +101,6 @@ class ResearchEngine:
         ]
         
         self.vector_db.add_documents(documents)
-        self.vector_db.persist()
         return f"Successfully ingested {len(documents)} chunks from {filename}"
 
     def ingest_url(self, url: str) -> str:
@@ -115,7 +112,6 @@ class ResearchEngine:
         ]
         
         self.vector_db.add_documents(documents)
-        self.vector_db.persist()
         return f"Successfully ingested {len(documents)} chunks from {url}"
 
     def query(self, user_query: str, limit: int = 5) -> Dict[str, Any]:
@@ -160,16 +156,11 @@ class ResearchEngine:
         try:
             # Delete the collection properly
             self.vector_db.delete_collection()
-            # Re-initialize
+            # Re-initialize in-memory
             self.vector_db = Chroma(
-                persist_directory=self.persist_directory,
                 embedding_function=self.embeddings,
                 collection_name="research_docs"
             )
-            # Ensure folder is clean if possible, but delete_collection is usually enough
-            if os.path.exists(self.persist_directory):
-                shutil.rmtree(self.persist_directory)
-                os.makedirs(self.persist_directory, exist_ok=True)
             logger.info("Database cleared successfully.")
         except Exception as e:
             logger.error(f"Error clearing DB: {e}")
